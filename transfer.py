@@ -4,10 +4,15 @@ import mysql.connector
 import sys
 import json
 
-def export_char(character_name):
+def export_char(account_name, character_name):
 
-    def fetch_data(character_name):
-        cursor.execute("SELECT * FROM darkflameserver.charinfo WHERE name = LOWER(%s)", [character_name.lower()])
+    def fetch_data(account_name, character_name):
+        cursor.execute("""
+            SELECT * FROM darkflameserver.charinfo ci 
+            JOIN darkflameserver.accounts a 
+            WHERE a.name = LOWER(%s) and ci.name = LOWER(%s) and ci.account_id = a.id""", 
+            [account_name.lower(), character_name.lower()]
+        )
         charinfo = cursor.fetchone()
         character_id = charinfo[0]
 
@@ -26,14 +31,16 @@ def export_char(character_name):
         for row in property_ids_result:
             property_ids.append(str(row[0]))
 
-        cursor.execute("SELECT * FROM darkflameserver.properties_contents WHERE property_id in ({id})".format(id=", ".join(property_ids)))
-        properties_contents = cursor.fetchall()
+        properties_contents = []
+        if property_ids:
+            cursor.execute("SELECT * FROM darkflameserver.properties_contents WHERE property_id in ({id})".format(id=", ".join(property_ids)))
+            properties_contents = cursor.fetchall()
 
         return { 'charinfo': charinfo, 'xml_data': xml_data, 'friends': friends, 'properties': properties, 'properties_contents': properties_contents }
 
-    char_data = fetch_data(character_name)
+    char_data = fetch_data(account_name, character_name)
     f = open(str(char_data['charinfo'][0])+'.json', "w")
-    f.write(json.dumps(char_data))
+    f.write(json.dumps(char_data, default=str))
     f.close()
 
     return
@@ -114,6 +121,6 @@ if __name__ == '__main__':
         sys.exit(2)
 
     if sys.argv[1] in ['export', 'e']:
-        export_char(sys.argv[2])
+        export_char(sys.argv[2], sys.argv[3])
     else:
         import_char(sys.argv[2], sys.argv[3])
