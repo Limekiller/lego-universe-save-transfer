@@ -109,10 +109,10 @@ def import_char(account_name, filepath):
 if __name__ == '__main__':
 
     db = mysql.connector.connect(
-        host = "localhost",
-        user = "root",
-        password = "MySecretRootPW",
-        port = 3307
+        host = "your_db_host",
+        user = "your_db_user",
+        password = "your_db_pass",
+        port = 3306
     )
     cursor = db.cursor(prepared=True)
 
