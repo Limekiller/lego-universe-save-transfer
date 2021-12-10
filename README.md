@@ -11,4 +11,4 @@ Include as an argument the name of the account (name field from accounts table) 
 
 **To import a character:**
 Include as an argument the name of the account (name field from account table) and a path to the JSON export file
-`transfer.py import {account_name} {path_to_file}
+`transfer.py import {account_name} {path_to_file}`
