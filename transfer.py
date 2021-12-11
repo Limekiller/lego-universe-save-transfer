@@ -19,9 +19,6 @@ def export_char(account_name, character_name):
         cursor.execute("SELECT xml_data FROM darkflameserver.charxml WHERE id = %s", [character_id])
         xml_data = cursor.fetchone()[0]
 
-        cursor.execute("SELECT friend_id, best_friend FROM darkflameserver.friends WHERE player_id = %s", [character_id])
-        friends = cursor.fetchall()
-
         cursor.execute("SELECT * FROM darkflameserver.properties WHERE owner_id = %s", [character_id])
         properties = cursor.fetchall()
 
@@ -36,7 +33,7 @@ def export_char(account_name, character_name):
             cursor.execute("SELECT * FROM darkflameserver.properties_contents WHERE property_id in ({id})".format(id=", ".join(property_ids)))
             properties_contents = cursor.fetchall()
 
-        return { 'charinfo': charinfo, 'xml_data': xml_data, 'friends': friends, 'properties': properties, 'properties_contents': properties_contents }
+        return { 'charinfo': charinfo, 'xml_data': xml_data, 'properties': properties, 'properties_contents': properties_contents }
 
     char_data = fetch_data(account_name, character_name)
     f = open(str(char_data['charinfo'][0])+'.json', "w")
@@ -66,14 +63,6 @@ def import_char(account_name, filepath):
             [new_char_id, char_data['xml_data']]
         )
         db.commit()
-
-        for row in char_data['friends']:
-            cursor.execute(
-                """INSERT INTO darkflameserver.friends (player_id, friend_id, best_friend) 
-                VALUES (%s, %s, %s)""",
-                [new_char_id, row[0], row[1]]
-            )
-            db.commit()
 
         for row in char_data['properties']:
             cursor.execute(
